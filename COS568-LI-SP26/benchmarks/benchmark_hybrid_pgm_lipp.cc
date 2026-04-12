@@ -54,5 +54,5 @@ void benchmark_64_hybrid_pgm_lipp(tli::Benchmark<uint64_t>& benchmark, const std
   }
 }
 
-// Explicit instantiations
-INSTANTIATE_TEMPLATES(benchmark_64_hybrid_pgm_lipp, uint64_t);
+// Explicit instantiations (multithread version for record=0,1,2)
+INSTANTIATE_TEMPLATES_MULTITHREAD(benchmark_64_hybrid_pgm_lipp, uint64_t);
