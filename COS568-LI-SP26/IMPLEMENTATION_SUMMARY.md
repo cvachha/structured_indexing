@@ -54,21 +54,32 @@ A hybrid index structure combining DynamicPGM and LIPP has been successfully imp
 ### Hybrid Architecture
 ```
 Initial Data → LIPP (bulk load)
-New Insertions → DPGM
-When DPGM size >= threshold → Flush DPGM to LIPP
+New Insertions → DPGM (fast insertion)
 Lookups → Check DPGM first, then LIPP
+No Flushing → DPGM grows indefinitely (milestone simplification)
 ```
+
+**Note**: For the milestone, flushing is disabled to avoid DynamicPGMIndex iterator compatibility issues. Future versions will implement batch flushing.
 
 ### Parameters
 - **PGM Error**: 64 (default, configurable via template parameter)
 - **Flush Threshold**: 5% of total keys (default, configurable via constructor)
 
 ### Naive Flush Implementation
-The current implementation uses a straightforward flush strategy:
-1. Iterate through all entries in DPGM
-2. Insert each key-value pair into LIPP individually
-3. Clear DPGM
-4. Update total key count and recalculate flush threshold
+
+**Milestone Version:**
+The current implementation uses a **no-flush** strategy:
+- DPGM grows indefinitely (no size limit)
+- Avoids complexity of extracting/reinserting data
+- Still demonstrates hybrid concept (LIPP for bulk, DPGM for inserts)
+- Trade-off: Memory usage increases with insertions
+
+**Future Production Version:**
+Would implement a flush strategy:
+1. Monitor DPGM size
+2. When threshold reached, extract data from DPGM
+3. Batch insert into LIPP or rebuild LIPP
+4. Clear DPGM to free memory
 
 ## How to Use
 

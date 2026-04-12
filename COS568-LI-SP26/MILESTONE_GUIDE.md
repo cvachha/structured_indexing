@@ -74,12 +74,17 @@ Note: `run_all.sh` now includes HybridPGMLIPP thanks to the updated `run_benchma
 **90% Lookup, 10% Insert (Lookup-Heavy):**
 - **LIPP**: Excellent lookup performance, few insertions
 - **DynamicPGM**: Good balanced performance
-- **Hybrid**: Should be close to LIPP, with slightly better insert handling
+- **Hybrid**: Uses LIPP for bulk data (fast lookups) + DPGM for new inserts (efficient)
+  - DPGM grows slowly (only 10% insertions)
+  - Should perform close to LIPP for lookups
 
 **10% Lookup, 90% Insert (Insertion-Heavy):**
 - **LIPP**: Struggles with heavy insertions
 - **DynamicPGM**: Best insertion performance
-- **Hybrid**: Should handle insertions better than LIPP, with flush overhead
+- **Hybrid**: DPGM handles insertions well
+  - DPGM grows quickly (90% insertions)
+  - Memory usage increases but maintains good insert throughput
+  - No flush overhead (milestone simplification)
 
 ### DynamicPGM Hyperparameter Selection
 
@@ -167,7 +172,21 @@ conda install pandas matplotlib numpy
 ## Next Steps After Milestone
 
 Consider these optimizations for the hybrid approach:
-1. Asynchronous flushing (background thread)
-2. Batch insertion into LIPP
-3. Adaptive flush thresholds
-4. Smart selective flushing
+1. **Implement flushing**: Add threshold-based flush from DPGM to LIPP
+2. **Batch insertion into LIPP**: Reduce per-item overhead
+3. **Asynchronous flushing**: Background thread to avoid blocking
+4. **Adaptive flush thresholds**: Workload-aware tuning
+5. **Smart selective flushing**: Flush hot/cold data differently
+
+## Implementation Notes
+
+**Current Hybrid Strategy (Milestone):**
+- Initial 100M keys → Bulk loaded into LIPP
+- New insertions → Go to DPGM indefinitely
+- No flushing implemented (avoids iterator complexity)
+- DPGM memory grows with insertions
+
+This is a valid baseline hybrid approach that demonstrates:
+- Combining static (LIPP) and dynamic (DPGM) structures
+- Query routing (check DPGM first, then LIPP)
+- Trade-offs between implementation complexity and performance

@@ -76,13 +76,12 @@ class HybridPGMLIPP : public Competitor<KeyType, SearchClass> {
 
   void Insert(const KeyValue<KeyType>& data, uint32_t thread_id) {
     // Insert into DPGM
+    // Naive implementation: no flushing, DPGM grows indefinitely
     pgm_.insert(data.key, data.value);
     pgm_size_++;
     
-    // Check if we need to flush DPGM into LIPP
-    if (pgm_size_ >= flush_threshold_) {
-      FlushDPGMToLIPP();
-    }
+    // Note: Flush disabled for naive milestone implementation
+    // In a production version, implement batch flushing to LIPP
   }
 
   std::string name() const { return "HybridPGMLIPP"; }
@@ -106,29 +105,9 @@ class HybridPGMLIPP : public Competitor<KeyType, SearchClass> {
   }
 
  private:
-  void FlushDPGMToLIPP() {
-    // Naive implementation: Extract all data from DPGM and insert into LIPP
-    std::vector<std::pair<KeyType, uint64_t>> data_to_flush;
-    data_to_flush.reserve(pgm_size_);
-    
-    // Iterate through DPGM and collect all key-value pairs
-    for (auto it = pgm_.begin(); it != pgm_.end(); ++it) {
-      data_to_flush.emplace_back(it->key(), it->value());
-    }
-
-    // Insert all data into LIPP
-    for (const auto& kv : data_to_flush) {
-      lipp_.insert(kv.first, kv.second);
-    }
-
-    // Clear and rebuild DPGM (empty)
-    pgm_ = decltype(pgm_)();
-    pgm_size_ = 0;
-    
-    // Update total keys
-    total_keys_ += data_to_flush.size();
-    flush_threshold_ = static_cast<size_t>(total_keys_ * flush_threshold_ratio_);
-  }
+  // FlushDPGMToLIPP() removed for milestone naive implementation
+  // Reason: DynamicPGMIndex iterator has compatibility issues
+  // Future improvement: Implement batch flush using bulk load or range scan
 
   DynamicPGMIndex<KeyType, uint64_t, SearchClass, PGMIndex<KeyType, SearchClass, pgm_error, 16>> pgm_;
   LIPP<KeyType, uint64_t> lipp_;

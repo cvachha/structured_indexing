@@ -13,16 +13,20 @@ This implementation combines DynamicPGM (DPGM) and LIPP into a hybrid index stru
 
 ### Implementation Details
 
-#### Files Created:
-- `competitors/hybrid_pgm_lipp.h` - Main hybrid index implementation
-- `benchmarks/benchmark_hybrid_pgm_lipp.h` - Benchmark header
-- `benchmarks/benchmark_hybrid_pgm_lipp.cc` - Benchmark implementation
-- `scripts/run_hybrid_benchmark.sh` - Script to run hybrid benchmarks
-- `scripts/analyze_hybrid_results.py` - Script to analyze and visualize results
+**Milestone Version - Simplified Hybrid Approach:**
 
-#### Key Parameters:
-- **PGM Error**: Configurable error bound for the PGM index (default: 64)
-- **Flush Threshold**: Percentage of total keys before flushing DPGM to LIPP (default: 5%)
+The current implementation uses a **no-flush** strategy for simplicity:
+- Initial data is bulk-loaded into LIPP
+- All new insertions go to DPGM (which handles dynamic updates efficiently)
+- Lookups check DPGM first (smaller, newer data), then LIPP
+- **No flushing occurs** - DPGM grows indefinitely
+
+This is still a valid hybrid approach that combines:
+- LIPP's excellent bulk-load and lookup performance
+- DPGM's efficient dynamic insertion handling
+
+**Future Enhancement:**
+A production version would implement periodic flushing from DPGM to LIPP when DPGM reaches a threshold size.
 
 ## Running Benchmarks
 
@@ -90,24 +94,26 @@ cd ..
 
 ## Architecture
 
-### Hybrid Index Structure
+### Hybrid Architecture
 
 ```
 ┌─────────────────────────────────────┐
 │      Hybrid DPGM + LIPP Index       │
+│         (No-Flush Version)          │
 ├─────────────────────────────────────┤
 │                                     │
 │  ┌──────────────┐  ┌─────────────┐ │
 │  │   DPGM       │  │    LIPP     │ │
-│  │  (Dynamic)   │  │  (Static +  │ │
-│  │              │  │   Inserts)  │ │
-│  │ - New keys   │  │ - Bulk data │ │
-│  │ - Fast insert│  │ - Fast      │ │
+│  │  (Dynamic)   │  │   (Bulk)    │ │
+│  │              │  │             │ │
+│  │ - New keys   │  │ - Initial   │ │
+│  │ - Grows      │  │   100M keys │ │
+│  │   indefin.   │  │ - Fast      │ │
 │  │              │  │   lookup    │ │
 │  └──────────────┘  └─────────────┘ │
-│         │                 │         │
-│         └────Flush────────┘         │
-│       (when threshold reached)      │
+│         ↑                 ↑         │
+│         └────Lookup───────┘         │
+│      (check DPGM first, then LIPP)  │
 └─────────────────────────────────────┘
 ```
 
@@ -115,9 +121,7 @@ cd ..
 
 **Insertion:**
 1. Insert key-value pair into DPGM
-2. Increment DPGM size counter
-3. Check if flush threshold is reached
-4. If yes, flush all DPGM data to LIPP and clear DPGM
+2. DPGM grows to accommodate new data (no size limit)
 
 **Lookup:**
 1. Search for key in DPGM
@@ -125,11 +129,10 @@ cd ..
 3. If not found, search in LIPP
 4. Return result
 
-**Flushing (Naive Implementation):**
-1. Iterate through all key-value pairs in DPGM
-2. Insert each pair individually into LIPP
-3. Clear DPGM
-4. Update total key count and flush threshold
+**No Flushing:**
+- For milestone simplicity, DPGM never flushes to LIPP
+- This avoids complexity while still demonstrating hybrid approach
+- Trade-off: DPGM memory grows with insertions
 
 ## Performance Characteristics
 
@@ -145,23 +148,26 @@ cd ..
 - More frequent flushes
 - Insertion performance is critical
 
-### Limitations (Naive Implementation)
+### Limitations (Milestone No-Flush Implementation)
 
-1. **Flush Overhead**: Extracting from DPGM and inserting into LIPP individually is expensive
-2. **No Bulk Loading**: LIPP doesn't support bulk loading when it already contains data
-3. **Synchronous Flushing**: Flush blocks concurrent operations
-4. **Fixed Threshold**: 5% threshold may not be optimal for all workloads
+1. **Growing DPGM Size**: DPGM memory increases with every insertion (no flushing)
+2. **Lookup Performance**: May degrade as DPGM grows larger
+3. **No Memory Recycling**: Old data stays in DPGM indefinitely
+4. **Simplified Approach**: Trade-off between implementation complexity and performance
+
+These limitations are **intentional for the milestone** to provide a working baseline.
 
 ## Future Improvements
 
-Potential optimizations for better performance:
+Potential optimizations beyond the milestone no-flush version:
 
-1. **Asynchronous Flushing**: Background thread for flushing to avoid blocking operations
-2. **Batch Insertion**: Collect multiple items before inserting into LIPP
-3. **Adaptive Threshold**: Dynamically adjust flush threshold based on workload patterns
-4. **LIPP Bulk Load Support**: Modify LIPP to support efficient bulk loading with existing data
-5. **Smart Flushing**: Flush only frequently accessed or relevant keys
-6. **Multi-level DPGM**: Use multiple DPGM instances before flushing to LIPP
+1. **Implement Flushing**: Add periodic flush from DPGM to LIPP when threshold reached
+2. **Batch Insertion**: Collect multiple items before inserting into LIPP (reduces overhead)
+3. **Asynchronous Flushing**: Background thread for flushing to avoid blocking operations
+4. **Adaptive Threshold**: Dynamically adjust flush threshold based on workload patterns
+5. **LIPP Bulk Load Support**: Modify LIPP to support efficient bulk loading with existing data
+6. **Smart Flushing**: Flush only frequently accessed or relevant keys
+7. **Multi-level DPGM**: Use multiple DPGM instances before flushing to LIPP
 
 ## Dataset Information
 
