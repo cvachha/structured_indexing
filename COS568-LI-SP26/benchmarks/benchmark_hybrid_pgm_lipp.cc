@@ -55,18 +55,4 @@ void benchmark_64_hybrid_pgm_lipp(tli::Benchmark<uint64_t>& benchmark, const std
 }
 
 // Explicit instantiations
-template void benchmark_64_hybrid_pgm_lipp<BranchingBinarySearch<1024>>(
-    tli::Benchmark<uint64_t>&, bool, const std::vector<int>&);
-template void benchmark_64_hybrid_pgm_lipp<BranchingBinarySearch<2048>>(
-    tli::Benchmark<uint64_t>&, bool, const std::vector<int>&);
-template void benchmark_64_hybrid_pgm_lipp<LinearSearch<1024>>(
-    tli::Benchmark<uint64_t>&, bool, const std::vector<int>&);
-template void benchmark_64_hybrid_pgm_lipp<InterpolationSearch<1024>>(
-    tli::Benchmark<uint64_t>&, bool, const std::vector<int>&);
-template void benchmark_64_hybrid_pgm_lipp<ExponentialSearch<1024>>(
-    tli::Benchmark<uint64_t>&, bool, const std::vector<int>&);
-
-template void benchmark_64_hybrid_pgm_lipp<1024>(
-    tli::Benchmark<uint64_t>&, const std::string&);
-template void benchmark_64_hybrid_pgm_lipp<2048>(
-    tli::Benchmark<uint64_t>&, const std::string&);
+INSTANTIATE_TEMPLATES(benchmark_64_hybrid_pgm_lipp, uint64_t);
