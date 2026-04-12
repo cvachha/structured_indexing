@@ -35,10 +35,20 @@ def load_and_parse_results(result_dir='./results'):
         dfs = []
         for csv_file in csv_files:
             try:
-                df = pd.read_csv(csv_file)
+                # Read CSV with flexible column handling (some indexes have extra variant columns)
+                df = pd.read_csv(csv_file, skipinitialspace=True)
                 dfs.append(df)
             except Exception as e:
                 print(f"Error loading {csv_file}: {e}")
+                # Try to debug by showing first few lines
+                try:
+                    with open(csv_file, 'r') as f:
+                        print(f"  First 3 lines of {os.path.basename(csv_file)}:")
+                        for i, line in enumerate(f):
+                            if i < 3:
+                                print(f"    {line.strip()}")
+                except:
+                    pass
         
         if dfs:
             workload_info['data'] = pd.concat(dfs, ignore_index=True)
