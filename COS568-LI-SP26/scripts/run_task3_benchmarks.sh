@@ -8,64 +8,18 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-RESULTS_DIR="${ROOT_DIR}/results"
-
-# Under sbatch, the script may execute from a copied spool path, so BASH_SOURCE
-# can resolve to /var/spool/... instead of the repository location.
-if [ ! -f "${ROOT_DIR}/CMakeLists.txt" ] && [ -n "${SLURM_SUBMIT_DIR:-}" ]; then
-  if [ -f "${SLURM_SUBMIT_DIR}/COS568-LI-SP26/CMakeLists.txt" ]; then
-    ROOT_DIR="${SLURM_SUBMIT_DIR}/COS568-LI-SP26"
-  elif [ -f "${SLURM_SUBMIT_DIR}/CMakeLists.txt" ]; then
-    ROOT_DIR="${SLURM_SUBMIT_DIR}"
-  fi
-  RESULTS_DIR="${ROOT_DIR}/results"
-fi
-
-# Batch shells are often non-interactive and may not have cmake on PATH.
-if ! command -v cmake >/dev/null 2>&1; then
-  [ -f /etc/profile ] && source /etc/profile || true
-  if command -v module >/dev/null 2>&1; then
-    module load cmake >/dev/null 2>&1 || true
-  fi
-fi
-
-if ! command -v cmake >/dev/null 2>&1; then
-  echo "Error: cmake not found in PATH for batch job"
-  echo "Hint: load your site modules before build, e.g. module load cmake gcc"
-  exit 1
-fi
-
-# Prefer in-repo build directory, but fall back to writable temp dirs on clusters.
-PREFERRED_BUILD_DIR="${ROOT_DIR}/build"
-if mkdir -p "${PREFERRED_BUILD_DIR}" 2>/dev/null; then
-  BUILD_DIR="${PREFERRED_BUILD_DIR}"
-elif [ -n "${SLURM_TMPDIR:-}" ]; then
-  BUILD_DIR="${SLURM_TMPDIR}/cos568_build"
-  mkdir -p "${BUILD_DIR}"
-  echo "Warning: cannot write to ${PREFERRED_BUILD_DIR}; using ${BUILD_DIR}"
-elif [ -n "${TMPDIR:-}" ]; then
-  BUILD_DIR="${TMPDIR}/cos568_build"
-  mkdir -p "${BUILD_DIR}"
-  echo "Warning: cannot write to ${PREFERRED_BUILD_DIR}; using ${BUILD_DIR}"
-else
-  echo "Error: cannot create ${PREFERRED_BUILD_DIR}, and no SLURM_TMPDIR/TMPDIR fallback is available"
-  exit 1
-fi
-
-echo "ROOT_DIR=${ROOT_DIR}"
-echo "BUILD_DIR=${BUILD_DIR}"
-
 cd "${ROOT_DIR}"
 
 echo "========================================="
 echo "Building benchmark binaries"
 echo "========================================="
 
-cmake -S "${ROOT_DIR}" -B "${BUILD_DIR}" -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-O3 -march=native"
-cmake --build "${BUILD_DIR}" -j "$(nproc 2>/dev/null || echo 4)"
+mkdir -p build
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-O3 -march=native"
+cmake --build build -j "$(nproc 2>/dev/null || echo 4)"
 
-BENCHMARK="${BUILD_DIR}/benchmark"
-GENERATOR="${BUILD_DIR}/generate"
+BENCHMARK="${ROOT_DIR}/build/benchmark"
+GENERATOR="${ROOT_DIR}/build/generate"
 
 if [ ! -f "${BENCHMARK}" ]; then
   echo "Error: benchmark binary not found at ${BENCHMARK}"
@@ -76,7 +30,7 @@ if [ ! -f "${GENERATOR}" ]; then
   exit 1
 fi
 
-mkdir -p "${RESULTS_DIR}"
+mkdir -p "${ROOT_DIR}/results"
 
 DATASETS=(
   "fb_100M_public_uint64"
@@ -89,13 +43,13 @@ run_one() {
   local ops="$2"
 
   echo "  -> LIPP"
-  "${BENCHMARK}" "${ROOT_DIR}/data/${data}" "${ROOT_DIR}/data/${ops}" --through --csv --only LIPP -r 3
+  "${BENCHMARK}" "./data/${data}" "./data/${ops}" --through --csv --only LIPP -r 3
 
   echo "  -> DynamicPGM (pareto)"
-  "${BENCHMARK}" "${ROOT_DIR}/data/${data}" "${ROOT_DIR}/data/${ops}" --through --csv --only DynamicPGM --pareto -r 3
+  "${BENCHMARK}" "./data/${data}" "./data/${ops}" --through --csv --only DynamicPGM --pareto -r 3
 
   echo "  -> HybridPGMLIPP (pareto)"
-  "${BENCHMARK}" "${ROOT_DIR}/data/${data}" "${ROOT_DIR}/data/${ops}" --through --csv --only HybridPGMLIPP --pareto -r 3
+  "${BENCHMARK}" "./data/${data}" "./data/${ops}" --through --csv --only HybridPGMLIPP --pareto -r 3
 }
 
 for DATA in "${DATASETS[@]}"; do
@@ -110,10 +64,11 @@ for DATA in "${DATASETS[@]}"; do
   echo "Generating mixed workloads for ${DATA}"
   echo "========================================="
 
-  "${GENERATOR}" "${ROOT_DIR}/data/${DATA}" 2000000 \
+  # Paths passed to the generator are relative to ROOT_DIR (current directory).
+  "${GENERATOR}" "./data/${DATA}" 2000000 \
     --insert-ratio 0.1 --negative-lookup-ratio 0.5 --mix
 
-  "${GENERATOR}" "${ROOT_DIR}/data/${DATA}" 2000000 \
+  "${GENERATOR}" "./data/${DATA}" 2000000 \
     --insert-ratio 0.9 --negative-lookup-ratio 0.5 --mix
 
   OPS_10I="${DATA}_ops_2M_0.000000rq_0.500000nl_0.100000i_0m_mix"
