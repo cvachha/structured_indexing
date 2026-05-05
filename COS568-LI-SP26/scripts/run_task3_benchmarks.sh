@@ -10,6 +10,31 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 RESULTS_DIR="${ROOT_DIR}/results"
 
+# Under sbatch, the script may execute from a copied spool path, so BASH_SOURCE
+# can resolve to /var/spool/... instead of the repository location.
+if [ ! -f "${ROOT_DIR}/CMakeLists.txt" ] && [ -n "${SLURM_SUBMIT_DIR:-}" ]; then
+  if [ -f "${SLURM_SUBMIT_DIR}/COS568-LI-SP26/CMakeLists.txt" ]; then
+    ROOT_DIR="${SLURM_SUBMIT_DIR}/COS568-LI-SP26"
+  elif [ -f "${SLURM_SUBMIT_DIR}/CMakeLists.txt" ]; then
+    ROOT_DIR="${SLURM_SUBMIT_DIR}"
+  fi
+  RESULTS_DIR="${ROOT_DIR}/results"
+fi
+
+# Batch shells are often non-interactive and may not have cmake on PATH.
+if ! command -v cmake >/dev/null 2>&1; then
+  [ -f /etc/profile ] && source /etc/profile || true
+  if command -v module >/dev/null 2>&1; then
+    module load cmake >/dev/null 2>&1 || true
+  fi
+fi
+
+if ! command -v cmake >/dev/null 2>&1; then
+  echo "Error: cmake not found in PATH for batch job"
+  echo "Hint: load your site modules before build, e.g. module load cmake gcc"
+  exit 1
+fi
+
 # Prefer in-repo build directory, but fall back to writable temp dirs on clusters.
 PREFERRED_BUILD_DIR="${ROOT_DIR}/build"
 if mkdir -p "${PREFERRED_BUILD_DIR}" 2>/dev/null; then
