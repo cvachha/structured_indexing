@@ -7,8 +7,21 @@
 
 set -e
 
-# ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-# cd "${ROOT_DIR}"
+# In non-interactive batch jobs, toolchain binaries may not be on PATH.
+if ! command -v cmake >/dev/null 2>&1; then
+  [ -f /etc/profile.d/modules.sh ] && source /etc/profile.d/modules.sh || true
+  [ -f /etc/profile ] && source /etc/profile || true
+  if command -v module >/dev/null 2>&1; then
+    module load cmake >/dev/null 2>&1 || true
+  fi
+fi
+
+if ! command -v cmake >/dev/null 2>&1; then
+  echo "Error: cmake not found in PATH."
+  echo "Submit with modules, e.g.:"
+  echo "  sbatch --wrap='source /etc/profile.d/modules.sh; module load cmake gcc; bash scripts/run_task3_benchmarks.sh'"
+  exit 1
+fi
 
 echo "========================================="
 echo "Building benchmark binaries"
@@ -90,7 +103,7 @@ MIX_HEADER="index_name,build_time_ns1,build_time_ns2,build_time_ns3,\
 index_size_bytes,mixed_throughput_mops1,mixed_throughput_mops2,mixed_throughput_mops3,\
 search_method,pgm_error,flush_threshold,flush_batch,max_flush_threshold,min_flush_threshold"
 
-for FILE in "${ROOT_DIR}/results/"*mix*_results_table.csv; do
+for FILE in ./results/*mix*_results_table.csv; do
   [ -f "${FILE}" ] || continue
 
   # Drop existing header line if present.
