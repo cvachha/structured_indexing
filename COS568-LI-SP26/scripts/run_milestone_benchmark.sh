@@ -104,8 +104,8 @@ do
         if head -n 1 "$FILE" | grep -q "index_name"; then
             sed -i '1d' "$FILE"  # Remove existing header
         fi
-        # Add proper header for mixed workload (with extra column for hybrid variants)
-        sed -i '1s/^/index_name,build_time_ns1,build_time_ns2,build_time_ns3,index_size_bytes,mixed_throughput_mops1,mixed_throughput_mops2,mixed_throughput_mops3,search_method,pgm_error,flush_threshold\n/' "$FILE"
+        # Add proper header for mixed workload. Non-hybrid rows simply leave later variant columns empty.
+        sed -i '1s/^/index_name,build_time_ns1,build_time_ns2,build_time_ns3,index_size_bytes,mixed_throughput_mops1,mixed_throughput_mops2,mixed_throughput_mops3,search_method,pgm_error,flush_threshold,flush_batch,max_flush_threshold,min_flush_threshold\n/' "$FILE"
         echo "  - Header set for $(basename $FILE)"
     fi
 done

@@ -4,55 +4,54 @@
 #include "benchmarks/common.h"
 #include "competitors/hybrid_pgm_lipp.h"
 
+// params: { flush_threshold_pct, flush_batch_size, max_flush_threshold, min_flush_threshold }
+//
+// Pareto sweep covers four (pgm_error, tuning) points.  Larger batch sizes
+// are now cheap because the flush worker copies from a sorted vector rather
+// than walking a PGM tree, so we push batches up relative to Milestone 2.
+
 template <typename Searcher>
-void benchmark_64_hybrid_pgm_lipp(tli::Benchmark<uint64_t>& benchmark, 
-                                  bool pareto, const std::vector<int>& params) {
+void benchmark_64_hybrid_pgm_lipp(tli::Benchmark<uint64_t>& benchmark,
+                                   bool pareto,
+                                   const std::vector<int>& params) {
   if (!pareto) {
-    // Run with specific parameters
-    if (params.size() > 0) {
-      // params[0] should be flush threshold percentage (e.g., 5 for 5%)
+    if (!params.empty())
       benchmark.template Run<HybridPGMLIPP<uint64_t, Searcher, 64>>(params);
-    } else {
-      // Default configuration
+    else
       benchmark.template Run<HybridPGMLIPP<uint64_t, Searcher, 64>>();
-    }
   } else {
-    // Pareto frontier: sweep different configurations
-    // Try different PGM errors
-    benchmark.template Run<HybridPGMLIPP<uint64_t, Searcher, 16>>();
-    benchmark.template Run<HybridPGMLIPP<uint64_t, Searcher, 32>>();
-    benchmark.template Run<HybridPGMLIPP<uint64_t, Searcher, 64>>();
-    benchmark.template Run<HybridPGMLIPP<uint64_t, Searcher, 128>>();
-    benchmark.template Run<HybridPGMLIPP<uint64_t, Searcher, 256>>();
+    // Pareto frontier: vary error bound and flush aggressiveness together.
+    benchmark.template Run<HybridPGMLIPP<uint64_t, Searcher, 32>>({1, 256, 32768, 512});
+    benchmark.template Run<HybridPGMLIPP<uint64_t, Searcher, 64>>({2, 512, 65536, 1024});
+    benchmark.template Run<HybridPGMLIPP<uint64_t, Searcher, 128>>({3, 1024, 131072, 2048});
+    benchmark.template Run<HybridPGMLIPP<uint64_t, Searcher, 256>>({5, 2048, 262144, 4096});
   }
 }
 
 template <int record>
-void benchmark_64_hybrid_pgm_lipp(tli::Benchmark<uint64_t>& benchmark, const std::string& filename) {
-  // Simple configuration for mixed workloads
-  // Use reasonable defaults: PGM error of 64 and 5% flush threshold
-  std::vector<int> params = {5};  // 5% flush threshold
-  
+void benchmark_64_hybrid_pgm_lipp(tli::Benchmark<uint64_t>& benchmark,
+                                   const std::string& filename) {
   if (filename.find("mix") != std::string::npos) {
-    // For mixed workloads
     if (filename.find("0.100000i") != std::string::npos) {
-      // 90% lookup, 10% insertion - lookup heavy
-      benchmark.template Run<HybridPGMLIPP<uint64_t, BranchingBinarySearch<record>, 64>>(params);
-      benchmark.template Run<HybridPGMLIPP<uint64_t, InterpolationSearch<record>, 64>>(params);
+      // 90% lookup, 10% insert: flush aggressively so most keys live in LIPP.
+      const std::vector<int> p = {1, 512, 32768, 512};
+      benchmark.template Run<HybridPGMLIPP<uint64_t, BranchingBinarySearch<record>, 64>>(p);
+      benchmark.template Run<HybridPGMLIPP<uint64_t, InterpolationSearch<record>, 64>>(p);
     } else if (filename.find("0.500000i") != std::string::npos) {
-      // 50% lookup, 50% insertion - balanced
-      benchmark.template Run<HybridPGMLIPP<uint64_t, BranchingBinarySearch<record>, 64>>(params);
-      benchmark.template Run<HybridPGMLIPP<uint64_t, InterpolationSearch<record>, 64>>(params);
+      // 50/50: balanced threshold and batch.
+      const std::vector<int> p = {2, 512, 65536, 1024};
+      benchmark.template Run<HybridPGMLIPP<uint64_t, BranchingBinarySearch<record>, 64>>(p);
+      benchmark.template Run<HybridPGMLIPP<uint64_t, InterpolationSearch<record>, 64>>(p);
     } else if (filename.find("0.900000i") != std::string::npos) {
-      // 10% lookup, 90% insertion - insertion heavy
-      benchmark.template Run<HybridPGMLIPP<uint64_t, BranchingBinarySearch<record>, 64>>(params);
-      benchmark.template Run<HybridPGMLIPP<uint64_t, InterpolationSearch<record>, 64>>(params);
+      // 10% lookup, 90% insert: large threshold to amortise flush cost.
+      const std::vector<int> p = {5, 2048, 262144, 4096};
+      benchmark.template Run<HybridPGMLIPP<uint64_t, BranchingBinarySearch<record>, 128>>(p);
+      benchmark.template Run<HybridPGMLIPP<uint64_t, InterpolationSearch<record>, 128>>(p);
     }
   } else {
-    // Default for non-mixed workloads
-    benchmark.template Run<HybridPGMLIPP<uint64_t, BranchingBinarySearch<record>, 64>>(params);
+    const std::vector<int> p = {2, 512, 65536, 1024};
+    benchmark.template Run<HybridPGMLIPP<uint64_t, BranchingBinarySearch<record>, 64>>(p);
   }
 }
 
-// Explicit instantiations (multithread version for record=0,1,2)
 INSTANTIATE_TEMPLATES_MULTITHREAD(benchmark_64_hybrid_pgm_lipp, uint64_t);

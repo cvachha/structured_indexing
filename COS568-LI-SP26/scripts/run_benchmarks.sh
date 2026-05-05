@@ -51,7 +51,7 @@ do
             sed -i '1d' $FILE  # Delete the first line
         fi
         # Add the header
-        sed -i '1s/^/index_name,build_time_ns1,build_time_ns2,build_time_ns3,index_size_bytes,mixed_throughput_mops1,mixed_throughput_mops2,mixed_throughput_mops3,search_method,value\n/' $FILE
+        sed -i '1s/^/index_name,build_time_ns1,build_time_ns2,build_time_ns3,index_size_bytes,mixed_throughput_mops1,mixed_throughput_mops2,mixed_throughput_mops3,search_method,pgm_error,flush_threshold,flush_batch,max_flush_threshold,min_flush_threshold\n/' $FILE
     else
         # For insert+lookup workload
         # Remove existing header if present
