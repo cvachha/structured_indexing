@@ -1,0 +1,356 @@
+(base) [cv6106@adroit5 structured_indexing]$ COS568-LI-SP26/scripts/run_task3_benchmarks.sh
+=========================================
+Building benchmark binaries
+=========================================
+-- Configuring done (0.0s)
+-- Generating done (0.0s)
+-- Build files have been written to: /scratch/network/cv6106/cos568/structured_indexing/COS568-LI-SP26/build
+[ 16%] Built target dtl
+[ 33%] Built target generate
+[100%] Built target benchmark
+=========================================
+Generating mixed workloads for fb_100M_public_uint64
+=========================================
+read 100000000 values from ./data/fb_100M_public_uint64 in 363 ms (275.482 M values/s)
+Thread's operation count: 2000000
+Negative lookup ratio: 0.500159
+Range query ratio: 0
+Insert ratio: 0.1
+wrote 99800000 values to ./data/fb_100M_public_uint64_ops_2M_0.000000rq_0.500000nl_0.100000i_0m_mix_bulkload in 3738 ms (26.6988 
+M values/s)
+wrote 2000000 values to ./data/fb_100M_public_uint64_ops_2M_0.000000rq_0.500000nl_0.100000i_0m_mix in 49 ms (40.8163 M values/s)
+read 100000000 values from ./data/fb_100M_public_uint64 in 500 ms (200 M values/s)
+Thread's operation count: 2000000
+Negative lookup ratio: 0.500095
+Range query ratio: 0
+Insert ratio: 0.9
+wrote 98200000 values to ./data/fb_100M_public_uint64_ops_2M_0.000000rq_0.500000nl_0.900000i_0m_mix_bulkload in 3379 ms (29.0619 
+M values/s)
+wrote 2000000 values to ./data/fb_100M_public_uint64_ops_2M_0.000000rq_0.500000nl_0.900000i_0m_mix in 46 ms (43.4783 M values/s)
+--- fb_100M_public_uint64: 90% lookup / 10% insert ---
+  -> LIPP
+Repeating lookup code 3 time(s).
+Using 1 thread(s).
+read 100000000 values from ./data/fb_100M_public_uint64 in 555 ms (180.18 M values/s)
+read 2000000 values from ./data/fb_100M_public_uint64_ops_2M_0.000000rq_0.500000nl_0.100000i_0m_mix in 48 ms (41.6667 M values/s)
+read 99800000 values from ./data/fb_100M_public_uint64_ops_2M_0.000000rq_0.500000nl_0.100000i_0m_mix_bulkload in 1503 ms (66.4005
+ M values/s)
+Data is unique.
+Data is unique.
+Variable rsum was: 0
+RESULT: LIPP,11870552,8739967,6415453index size,12700946864Throughput: ,6.8744,12.7424,13.9922
+  -> DynamicPGM (pareto)
+Repeating lookup code 3 time(s).
+Using 1 thread(s).
+read 100000000 values from ./data/fb_100M_public_uint64 in 571 ms (175.131 M values/s)
+read 2000000 values from ./data/fb_100M_public_uint64_ops_2M_0.000000rq_0.500000nl_0.100000i_0m_mix in 35 ms (57.1429 M values/s)
+read 99800000 values from ./data/fb_100M_public_uint64_ops_2M_0.000000rq_0.500000nl_0.100000i_0m_mix_bulkload in 1053 ms (94.7768 M values/s)
+Data is unique.
+Variable rsum was: 0
+RESULT: DynamicPGM,5561853,5500670,5456843index size,1721255788Throughput: ,0.944551,0.948986,0.963972Variant: ,BinarySearchVariant: ,16
+Variable rsum was: 0
+RESULT: DynamicPGM,5094546,5071136,5105537index size,1710555748Throughput: ,0.97753,0.973057,0.973666Variant: ,BinarySearchVariant: ,32
+Variable rsum was: 0
+RESULT: DynamicPGM,4879974,4899621,4911193index size,1705226028Throughput: ,0.955944,0.960885,0.951208Variant: ,BinarySearchVariant: ,64
+Variable rsum was: 0
+RESULT: DynamicPGM,4726506,4734070,4704021index size,1702558388Throughput: ,0.936665,0.934884,0.937467Variant: ,BinarySearchVariant: ,128
+Variable rsum was: 0
+RESULT: DynamicPGM,4553054,4555243,4530209index size,1701196688Throughput: ,0.885327,0.885698,0.884918Variant: ,BinarySearchVariant: ,256
+Variable rsum was: 0
+RESULT: DynamicPGM,4271145,4307797,4268992index size,1700504528Throughput: ,0.865225,0.862595,0.847482Variant: ,BinarySearchVariant: ,512
+Variable rsum was: 0
+RESULT: DynamicPGM,4013197,3986307,3987318index size,1700186368Throughput: ,0.836247,0.837342,0.835515Variant: ,BinarySearchVariant: ,1024
+  -> HybridPGMLIPP (pareto)
+Repeating lookup code 3 time(s).
+Using 1 thread(s).
+read 100000000 values from ./data/fb_100M_public_uint64 in 559 ms (178.891 M values/s)
+read 2000000 values from ./data/fb_100M_public_uint64_ops_2M_0.000000rq_0.500000nl_0.100000i_0m_mix in 33 ms (60.6061 M values/s)
+read 99800000 values from ./data/fb_100M_public_uint64_ops_2M_0.000000rq_0.500000nl_0.100000i_0m_mix_bulkload in 1040 ms (95.9615 M values/s)
+Data is unique.
+Variable rsum was: 0
+RESULT: HybridPGMLIPP,11976545,8769118,6832458index size,12700726200Throughput: ,0.763494,0.953814,1.00396Variant: ,BinarySearchVariant: ,32Variant: ,1Variant: ,256Variant: ,32768Variant: ,512
+Variable rsum was: 0
+RESULT: HybridPGMLIPP,6992126,6696347,9110122index size,12700726440Throughput: ,0.846723,0.799476,0.895325Variant: ,BinarySearchVariant: ,64Variant: ,2Variant: ,512Variant: ,65536Variant: ,1024
+Variable rsum was: 0
+RESULT: HybridPGMLIPP,7046752,6548618,6480734index size,12696383792Throughput: ,0.860719,0.873383,0.912973Variant: ,BinarySearchVariant: ,128Variant: ,3Variant: ,1024Variant: ,131072Variant: ,2048
+Variable rsum was: 0
+RESULT: HybridPGMLIPP,7004001,5951999,5867896index size,12687700920Throughput: ,0.860589,0.875931,0.742384Variant: ,BinarySearchVariant: ,256Variant: ,5Variant: ,2048Variant: ,262144Variant: ,4096
+--- fb_100M_public_uint64: 10% lookup / 90% insert ---
+  -> LIPP
+Repeating lookup code 3 time(s).
+Using 1 thread(s).
+read 100000000 values from ./data/fb_100M_public_uint64 in 565 ms (176.991 M values/s)
+read 2000000 values from ./data/fb_100M_public_uint64_ops_2M_0.000000rq_0.500000nl_0.900000i_0m_mix in 48 ms (41.6667 M values/s)
+read 98200000 values from ./data/fb_100M_public_uint64_ops_2M_0.000000rq_0.500000nl_0.900000i_0m_mix_bulkload in 1503 ms (65.336 M values/s)
+Data is unique.
+Variable rsum was: 0
+RESULT: LIPP,10951537,7553789,5158086index size,12656662928Throughput: ,1.66158,2.19784,2.06741
+  -> DynamicPGM (pareto)
+Repeating lookup code 3 time(s).
+Using 1 thread(s).
+read 100000000 values from ./data/fb_100M_public_uint64 in 565 ms (176.991 M values/s)
+read 2000000 values from ./data/fb_100M_public_uint64_ops_2M_0.000000rq_0.500000nl_0.900000i_0m_mix in 34 ms (58.8235 M values/s)
+read 98200000 values from ./data/fb_100M_public_uint64_ops_2M_0.000000rq_0.500000nl_0.900000i_0m_mix_bulkload in 1066 ms (92.1201 M values/s)
+Data is unique.
+Variable rsum was: 0
+RESULT: DynamicPGM,5469037,5377784,5408675index size,1721060608Throughput: ,3.01077,3.06027,3.05866Variant: ,BinarySearchVariant: ,16
+Variable rsum was: 0
+RESULT: DynamicPGM,5037535,5038358,5032691index size,1710429908Throughput: ,3.13855,3.13379,3.13632Variant: ,BinarySearchVariant: ,32
+Variable rsum was: 0
+RESULT: DynamicPGM,4848278,4866770,4907675index size,1705154448Throughput: ,3.1361,3.13659,3.14427Variant: ,BinarySearchVariant: ,64
+Variable rsum was: 0
+RESULT: DynamicPGM,4794243,4814545,4826443index size,1702518268Throughput: ,3.15814,3.13946,3.13114Variant: ,BinarySearchVariant: ,128
+Variable rsum was: 0
+RESULT: DynamicPGM,4502790,4503492,4544537index size,1701176228Throughput: ,3.07295,2.98507,2.99096Variant: ,BinarySearchVariant: ,256
+Variable rsum was: 0
+RESULT: DynamicPGM,4297396,4238243,4239930index size,1700494188Throughput: ,3.01136,2.99876,2.9459Variant: ,BinarySearchVariant: ,512
+Variable rsum was: 0
+RESULT: DynamicPGM,4218576,4344685,3988786index size,1700182088Throughput: ,2.2744,2.00908,2.94539Variant: ,BinarySearchVariant: ,1024
+  -> HybridPGMLIPP (pareto)
+Repeating lookup code 3 time(s).
+Using 1 thread(s).
+read 100000000 values from ./data/fb_100M_public_uint64 in 560 ms (178.571 M values/s)
+read 2000000 values from ./data/fb_100M_public_uint64_ops_2M_0.000000rq_0.500000nl_0.900000i_0m_mix in 35 ms (57.1429 M values/s)
+read 98200000 values from ./data/fb_100M_public_uint64_ops_2M_0.000000rq_0.500000nl_0.900000i_0m_mix_bulkload in 1086 ms (90.4236 M values/s)
+Data is unique.
+Variable rsum was: 0
+RESULT: HybridPGMLIPP,11403424,8143449,7496903index size,12654666128Throughput: ,0.945636,1.09227,0.827477Variant: ,BinarySearchVariant: ,32Variant: ,1Variant: ,256Variant: ,32768Variant: ,512
+Variable rsum was: 0
+RESULT: HybridPGMLIPP,5849804,5627662,5515655index size,12652652923Throughput: ,1.0619,1.03061,1.1147Variant: ,BinarySearchVariant: ,64Variant: ,2Variant: ,512Variant: ,65536Variant: ,1024
+Variable rsum was: 0
+RESULT: HybridPGMLIPP,5486496,5529929,5496243index size,12650407888Throughput: ,1.08386,1.17595,1.15729Variant: ,BinarySearchVariant: ,128Variant: ,3Variant: ,1024Variant: ,131072Variant: ,2048
+Variable rsum was: 0
+RESULT: HybridPGMLIPP,5562477,5548945,5614154index size,12641882216Throughput: ,1.16969,1.19296,1.19232Variant: ,BinarySearchVariant: ,256Variant: ,5Variant: ,2048Variant: ,262144Variant: ,4096
+=========================================
+Generating mixed workloads for books_100M_public_uint64
+=========================================
+read 100000000 values from ./data/books_100M_public_uint64 in 523 ms (191.205 M values/s)
+Thread's operation count: 2000000
+Negative lookup ratio: 0.499942
+Range query ratio: 0
+Insert ratio: 0.1
+wrote 99800000 values to ./data/books_100M_public_uint64_ops_2M_0.000000rq_0.500000nl_0.100000i_0m_mix_bulkload in 2389 ms (41.7748 M values/s)
+wrote 2000000 values to ./data/books_100M_public_uint64_ops_2M_0.000000rq_0.500000nl_0.100000i_0m_mix in 45 ms (44.4444 M values/s)
+read 100000000 values from ./data/books_100M_public_uint64 in 506 ms (197.628 M values/s)
+Thread's operation count: 2000000
+Negative lookup ratio: 0.50041
+Range query ratio: 0
+Insert ratio: 0.9
+wrote 98200000 values to ./data/books_100M_public_uint64_ops_2M_0.000000rq_0.500000nl_0.900000i_0m_mix_bulkload in 3113 ms (31.5451 M values/s)
+wrote 2000000 values to ./data/books_100M_public_uint64_ops_2M_0.000000rq_0.500000nl_0.900000i_0m_mix in 49 ms (40.8163 M values/s)
+--- books_100M_public_uint64: 90% lookup / 10% insert ---
+  -> LIPP
+Repeating lookup code 3 time(s).
+Using 1 thread(s).
+read 100000000 values from ./data/books_100M_public_uint64 in 568 ms (176.056 M values/s)
+read 2000000 values from ./data/books_100M_public_uint64_ops_2M_0.000000rq_0.500000nl_0.100000i_0m_mix in 45 ms (44.4444 M values/s)
+read 99800000 values from ./data/books_100M_public_uint64_ops_2M_0.000000rq_0.500000nl_0.100000i_0m_mix_bulkload in 1496 ms (66.7112 M values/s)
+Data is unique.
+Variable rsum was: 0
+RESULT: LIPP,11352886,8041938,6008353index size,11818525760Throughput: ,11.2627,18.9401,17.301
+  -> DynamicPGM (pareto)
+Repeating lookup code 3 time(s).
+Using 1 thread(s).
+read 100000000 values from ./data/books_100M_public_uint64 in 588 ms (170.068 M values/s)
+read 2000000 values from ./data/books_100M_public_uint64_ops_2M_0.000000rq_0.500000nl_0.100000i_0m_mix in 35 ms (57.1429 M values/s)
+read 99800000 values from ./data/books_100M_public_uint64_ops_2M_0.000000rq_0.500000nl_0.100000i_0m_mix_bulkload in 1091 ms (91.4757 M values/s)
+Data is unique.
+Variable rsum was: 0
+RESULT: DynamicPGM,5006646,4997258,4956670index size,1719102308Throughput: ,0.981356,0.914741,0.990711Variant: ,BinarySearchVariant: ,16
+Variable rsum was: 0
+RESULT: DynamicPGM,3739172,3732597,3743207index size,1703429848Throughput: ,1.04819,1.04693,1.04606Variant: ,BinarySearchVariant: ,32
+Variable rsum was: 0
+RESULT: DynamicPGM,3183846,3185874,3174943index size,1700298288Throughput: ,1.04317,1.0442,1.04453Variant: ,BinarySearchVariant: ,64
+Variable rsum was: 0
+RESULT: DynamicPGM,3034073,3001014,3036655index size,1700049908Throughput: ,1.04596,1.04412,1.04922Variant: ,BinarySearchVariant: ,128
+Variable rsum was: 0
+RESULT: DynamicPGM,2969773,2986536,2936224index size,1700010848Throughput: ,0.999132,0.994443,0.993603Variant: ,BinarySearchVariant: ,256
+Variable rsum was: 0
+RESULT: DynamicPGM,2929687,2904391,2943106index size,1700003028Throughput: ,0.950194,0.920013,0.943581Variant: ,BinarySearchVariant: ,512
+Variable rsum was: 0
+RESULT: DynamicPGM,2927863,2884024,2882168index size,1700001168Throughput: ,0.8878,0.894581,0.893653Variant: ,BinarySearchVariant: ,1024
+  -> HybridPGMLIPP (pareto)
+Repeating lookup code 3 time(s).
+Using 1 thread(s).
+read 100000000 values from ./data/books_100M_public_uint64 in 566 ms (176.678 M values/s)
+read 2000000 values from ./data/books_100M_public_uint64_ops_2M_0.000000rq_0.500000nl_0.100000i_0m_mix in 33 ms (60.6061 M values/s)
+read 99800000 values from ./data/books_100M_public_uint64_ops_2M_0.000000rq_0.500000nl_0.100000i_0m_mix_bulkload in 1064 ms (93.797 M values/s)
+Data is unique.
+Variable rsum was: 0
+RESULT: HybridPGMLIPP,11035532,8239693,5839442index size,11818401816Throughput: ,1.15654,1.1785,1.16823Variant: ,BinarySearchVariant: ,32Variant: ,1Variant: ,256Variant: ,32768Variant: ,512
+Variable rsum was: 0
+RESULT: HybridPGMLIPP,5898291,5903868,5885620index size,11818401816Throughput: ,1.04632,1.04728,1.05288Variant: ,BinarySearchVariant: ,64Variant: ,2Variant: ,512Variant: ,65536Variant: ,1024
+Variable rsum was: 0
+RESULT: HybridPGMLIPP,5962705,5798409,5804268index size,11815941008Throughput: ,1.00633,0.99171,0.963687Variant: ,BinarySearchVariant: ,128Variant: ,3Variant: ,1024Variant: ,131072Variant: ,2048
+Variable rsum was: 0
+RESULT: HybridPGMLIPP,5809365,5817498,5814113index size,11811064056Throughput: ,0.942727,0.937598,0.923422Variant: ,BinarySearchVariant: ,256Variant: ,5Variant: ,2048Variant: ,262144Variant: ,4096
+--- books_100M_public_uint64: 10% lookup / 90% insert ---
+  -> LIPP
+Repeating lookup code 3 time(s).
+Using 1 thread(s).
+read 100000000 values from ./data/books_100M_public_uint64 in 561 ms (178.253 M values/s)
+read 2000000 values from ./data/books_100M_public_uint64_ops_2M_0.000000rq_0.500000nl_0.900000i_0m_mix in 48 ms (41.6667 M values/s)
+read 98200000 values from ./data/books_100M_public_uint64_ops_2M_0.000000rq_0.500000nl_0.900000i_0m_mix_bulkload in 1467 ms (66.9393 M values/s)
+Data is unique.
+Variable rsum was: 0
+RESULT: LIPP,10655216,7437225,5148182index size,11753613200Throughput: ,2.59286,3.04273,3.00682
+  -> DynamicPGM (pareto)
+Repeating lookup code 3 time(s).
+Using 1 thread(s).
+read 100000000 values from ./data/books_100M_public_uint64 in 564 ms (177.305 M values/s)
+read 2000000 values from ./data/books_100M_public_uint64_ops_2M_0.000000rq_0.500000nl_0.900000i_0m_mix in 33 ms (60.6061 M values/s)
+read 98200000 values from ./data/books_100M_public_uint64_ops_2M_0.000000rq_0.500000nl_0.900000i_0m_mix_bulkload in 1040 ms (94.4231 M values/s)
+Data is unique.
+Variable rsum was: 0
+RESULT: DynamicPGM,4907252,4823558,4845256index size,1718657448Throughput: ,3.14178,3.20896,3.19268Variant: ,BinarySearchVariant: ,16
+Variable rsum was: 0
+RESULT: DynamicPGM,3632001,3609279,3607422index size,1703241188Throughput: ,3.29863,3.28578,3.30266Variant: ,BinarySearchVariant: ,32
+Variable rsum was: 0
+RESULT: DynamicPGM,3101874,3084171,3090030index size,1700290648Throughput: ,3.27474,3.2799,3.26957Variant: ,BinarySearchVariant: ,64
+Variable rsum was: 0
+RESULT: DynamicPGM,2923784,2927619,2924074index size,1700049408Throughput: ,3.18558,3.29108,3.29656Variant: ,BinarySearchVariant: ,128
+Variable rsum was: 0
+RESULT: DynamicPGM,2880946,2880917,2882265index size,1700011168Throughput: ,3.23109,3.22884,3.22417Variant: ,BinarySearchVariant: ,256
+Variable rsum was: 0
+RESULT: DynamicPGM,2853551,2858674,2850689index size,1700003048Throughput: ,3.17518,3.16398,3.15338Variant: ,BinarySearchVariant: ,512
+Variable rsum was: 0
+RESULT: DynamicPGM,2828614,2822698,2825475index size,1700001168Throughput: ,3.09026,3.06598,3.08429Variant: ,BinarySearchVariant: ,1024
+  -> HybridPGMLIPP (pareto)
+Repeating lookup code 3 time(s).
+Using 1 thread(s).
+read 100000000 values from ./data/books_100M_public_uint64 in 561 ms (178.253 M values/s)
+read 2000000 values from ./data/books_100M_public_uint64_ops_2M_0.000000rq_0.500000nl_0.900000i_0m_mix in 33 ms (60.6061 M values/s)
+read 98200000 values from ./data/books_100M_public_uint64_ops_2M_0.000000rq_0.500000nl_0.900000i_0m_mix_bulkload in 1033 ms (95.0629 M values/s)
+Data is unique.
+Variable rsum was: 0
+RESULT: HybridPGMLIPP,10684796,8194891,5796019index size,11752470320Throughput: ,0.919177,1.32014,1.23231Variant: ,BinarySearchVariant: ,32Variant: ,1Variant: ,256Variant: ,32768Variant: ,512
+Variable rsum was: 0
+RESULT: HybridPGMLIPP,5761690,5740200,8266772index size,11752471040Throughput: ,1.31246,1.22447,1.18502Variant: ,BinarySearchVariant: ,64Variant: ,2Variant: ,512Variant: ,65536Variant: ,1024
+Variable rsum was: 0
+RESULT: HybridPGMLIPP,5745886,5735934,8117251index size,11750043760Throughput: ,1.16981,1.26587,1.33575Variant: ,BinarySearchVariant: ,128Variant: ,3Variant: ,1024Variant: ,131072Variant: ,2048
+Variable rsum was: 0
+RESULT: HybridPGMLIPP,6060995,5815106,8263934index size,11745100568Throughput: ,1.22188,1.20207,1.18806Variant: ,BinarySearchVariant: ,256Variant: ,5Variant: ,2048Variant: ,262144Variant: ,4096
+=========================================
+Generating mixed workloads for osmc_100M_public_uint64
+=========================================
+read 100000000 values from ./data/osmc_100M_public_uint64 in 652 ms (153.374 M values/s)
+Thread's operation count: 2000000
+Negative lookup ratio: 0.499942
+Range query ratio: 0
+Insert ratio: 0.1
+wrote 99800000 values to ./data/osmc_100M_public_uint64_ops_2M_0.000000rq_0.500000nl_0.100000i_0m_mix_bulkload in 2336 ms (42.7226 M values/s)
+wrote 2000000 values to ./data/osmc_100M_public_uint64_ops_2M_0.000000rq_0.500000nl_0.100000i_0m_mix in 44 ms (45.4545 M values/s)
+read 100000000 values from ./data/osmc_100M_public_uint64 in 473 ms (211.416 M values/s)
+Thread's operation count: 2000000
+Negative lookup ratio: 0.50041
+Range query ratio: 0
+Insert ratio: 0.9
+wrote 98200000 values to ./data/osmc_100M_public_uint64_ops_2M_0.000000rq_0.500000nl_0.900000i_0m_mix_bulkload in 3030 ms (32.4092 M values/s)
+wrote 2000000 values to ./data/osmc_100M_public_uint64_ops_2M_0.000000rq_0.500000nl_0.900000i_0m_mix in 42 ms (47.619 M values/s)
+--- osmc_100M_public_uint64: 90% lookup / 10% insert ---
+  -> LIPP
+Repeating lookup code 3 time(s).
+Using 1 thread(s).
+read 100000000 values from ./data/osmc_100M_public_uint64 in 564 ms (177.305 M values/s)
+read 2000000 values from ./data/osmc_100M_public_uint64_ops_2M_0.000000rq_0.500000nl_0.100000i_0m_mix in 46 ms (43.4783 M values/s)
+read 99800000 values from ./data/osmc_100M_public_uint64_ops_2M_0.000000rq_0.500000nl_0.100000i_0m_mix_bulkload in 1521 ms (65.6147 M values/s)
+Data is unique.
+Variable rsum was: 0
+RESULT: LIPP,15913249,10774795,11319350index size,20602887232Throughput: ,8.88182,10.8106,10.706
+  -> DynamicPGM (pareto)
+Repeating lookup code 3 time(s).
+Using 1 thread(s).
+read 100000000 values from ./data/osmc_100M_public_uint64 in 498 ms (200.803 M values/s)
+read 2000000 values from ./data/osmc_100M_public_uint64_ops_2M_0.000000rq_0.500000nl_0.100000i_0m_mix in 35 ms (57.1429 M values/s)
+read 99800000 values from ./data/osmc_100M_public_uint64_ops_2M_0.000000rq_0.500000nl_0.100000i_0m_mix_bulkload in 1089 ms (91.6437 M values/s)
+Data is unique.
+Variable rsum was: 0
+RESULT: DynamicPGM,5225297,5143332,5212805index size,1716160208Throughput: ,1.11317,0.78768,1.12241Variant: ,BinarySearchVariant: ,16
+Variable rsum was: 0
+RESULT: DynamicPGM,4881534,4815454,4837061index size,1707679228Throughput: ,1.10353,1.12187,1.10896Variant: ,BinarySearchVariant: ,32
+Variable rsum was: 0
+RESULT: DynamicPGM,4758219,4784843,4790011index size,1703719788Throughput: ,1.06305,1.06161,1.05624Variant: ,BinarySearchVariant: ,64
+Variable rsum was: 0
+RESULT: DynamicPGM,4564699,4565442,4570911index size,1701834168Throughput: ,1.05076,1.05842,1.05142Variant: ,BinarySearchVariant: ,128
+Variable rsum was: 0
+RESULT: DynamicPGM,4482154,4488255,4504521index size,1700920428Throughput: ,1.01733,1.00509,1.00426Variant: ,BinarySearchVariant: ,256
+Variable rsum was: 0
+RESULT: DynamicPGM,4416251,4412086,4401865index size,1700465148Throughput: ,0.961087,0.966492,0.965761Variant: ,BinarySearchVariant: ,512
+Variable rsum was: 0
+RESULT: DynamicPGM,4388935,4386503,4394467index size,1700237808Throughput: ,0.899911,0.926777,0.922755Variant: ,BinarySearchVariant: ,1024
+  -> HybridPGMLIPP (pareto)
+Repeating lookup code 3 time(s).
+Using 1 thread(s).
+read 100000000 values from ./data/osmc_100M_public_uint64 in 473 ms (211.416 M values/s)
+read 2000000 values from ./data/osmc_100M_public_uint64_ops_2M_0.000000rq_0.500000nl_0.100000i_0m_mix in 35 ms (57.1429 M values/s)
+read 99800000 values from ./data/osmc_100M_public_uint64_ops_2M_0.000000rq_0.500000nl_0.100000i_0m_mix_bulkload in 1092 ms (91.3919 M values/s)
+Data is unique.
+Variable rsum was: 0
+RESULT: HybridPGMLIPP,17323914,12829738,9820322index size,20602653368Throughput: ,0.451675,0.971856,1.0573Variant: ,BinarySearchVariant: ,32Variant: ,1Variant: ,256Variant: ,32768Variant: ,512
+Variable rsum was: 0
+RESULT: HybridPGMLIPP,9409784,10789367,10085515index size,20602653848Throughput: ,0.891799,0.819729,0.977522Variant: ,BinarySearchVariant: ,64Variant: ,2Variant: ,512Variant: ,65536Variant: ,1024
+Variable rsum was: 0
+RESULT: HybridPGMLIPP,9370573,8855864,7831830index size,20598152080Throughput: ,0.911314,0.896184,1.01078Variant: ,BinarySearchVariant: ,128Variant: ,3Variant: ,1024Variant: ,131072Variant: ,2048
+Variable rsum was: 0
+RESULT: HybridPGMLIPP,7904743,7813782,7814114index size,20589188648Throughput: ,0.967435,0.965916,0.958778Variant: ,BinarySearchVariant: ,256Variant: ,5Variant: ,2048Variant: ,262144Variant: ,4096
+--- osmc_100M_public_uint64: 10% lookup / 90% insert ---
+  -> LIPP
+Repeating lookup code 3 time(s).
+Using 1 thread(s).
+read 100000000 values from ./data/osmc_100M_public_uint64 in 460 ms (217.391 M values/s)
+read 2000000 values from ./data/osmc_100M_public_uint64_ops_2M_0.000000rq_0.500000nl_0.900000i_0m_mix in 54 ms (37.037 M values/s)
+read 98200000 values from ./data/osmc_100M_public_uint64_ops_2M_0.000000rq_0.500000nl_0.900000i_0m_mix_bulkload in 1631 ms (60.2085 M values/s)
+Data is unique.
+Variable rsum was: 0
+RESULT: LIPP,17123146,11009203,10191212index size,20408967088Throughput: ,0.513001,1.06889,1.16094
+  -> DynamicPGM (pareto)
+Repeating lookup code 3 time(s).
+Using 1 thread(s).
+read 100000000 values from ./data/osmc_100M_public_uint64 in 467 ms (214.133 M values/s)
+read 2000000 values from ./data/osmc_100M_public_uint64_ops_2M_0.000000rq_0.500000nl_0.900000i_0m_mix in 37 ms (54.0541 M values/s)
+read 98200000 values from ./data/osmc_100M_public_uint64_ops_2M_0.000000rq_0.500000nl_0.900000i_0m_mix_bulkload in 1052 ms (93.346 M values/s)
+Data is unique.
+Variable rsum was: 0
+RESULT: DynamicPGM,5167875,5067842,5069362index size,1716133948Throughput: ,2.98854,3.02253,3.01836Variant: ,BinarySearchVariant: ,16
+Variable rsum was: 0
+RESULT: DynamicPGM,4719966,4750537,4743981index size,1707678788Throughput: ,3.06084,3.05168,3.06154Variant: ,BinarySearchVariant: ,32
+Variable rsum was: 0
+RESULT: DynamicPGM,4609586,4607410,4639191index size,1703724028Throughput: ,3.04949,3.04522,3.04677Variant: ,BinarySearchVariant: ,64
+Variable rsum was: 0
+RESULT: DynamicPGM,4469050,4470898,4478163index size,1701839508Throughput: ,3.01807,3.03086,3.04051Variant: ,BinarySearchVariant: ,128
+Variable rsum was: 0
+RESULT: DynamicPGM,4417990,4419056,4449223index size,1700923408Throughput: ,3.00435,3.0036,2.99781Variant: ,BinarySearchVariant: ,256
+Variable rsum was: 0
+RESULT: DynamicPGM,4347488,4344993,4349481index size,1700467268Throughput: ,2.94327,2.94988,2.95234Variant: ,BinarySearchVariant: ,512
+Variable rsum was: 0
+RESULT: DynamicPGM,4289269,4289639,4323176index size,1700239188Throughput: ,2.88478,2.87518,2.88737Variant: ,BinarySearchVariant: ,1024
+  -> HybridPGMLIPP (pareto)
+Repeating lookup code 3 time(s).
+Using 1 thread(s).
+read 100000000 values from ./data/osmc_100M_public_uint64 in 548 ms (182.482 M values/s)
+read 2000000 values from ./data/osmc_100M_public_uint64_ops_2M_0.000000rq_0.500000nl_0.900000i_0m_mix in 36 ms (55.5556 M values/s)
+read 98200000 values from ./data/osmc_100M_public_uint64_ops_2M_0.000000rq_0.500000nl_0.900000i_0m_mix_bulkload in 1056 ms (92.9924 M values/s)
+Data is unique.
+Variable rsum was: 0
+RESULT: HybridPGMLIPP,14945497,9822114,7808489index size,20406899008Throughput: ,0.790201,1.11434,1.07091Variant: ,BinarySearchVariant: ,32Variant: ,1Variant: ,256Variant: ,32768Variant: ,512
+Variable rsum was: 0
+RESULT: HybridPGMLIPP,7751114,7763189,7704688index size,20407185689Throughput: ,1.06837,1.04105,1.02559Variant: ,BinarySearchVariant: ,64Variant: ,2Variant: ,512Variant: ,65536Variant: ,1024
+Variable rsum was: 0
+RESULT: HybridPGMLIPP,7683362,7645796,7690431index size,20402463648Throughput: ,1.06483,1.01066,1.15394Variant: ,BinarySearchVariant: ,128Variant: ,3Variant: ,1024Variant: ,131072Variant: ,2048
+Variable rsum was: 0
+RESULT: HybridPGMLIPP,7686799,7655475,7671666index size,20393478376Throughput: ,1.12702,1.18088,1.17579Variant: ,BinarySearchVariant: ,256Variant: ,5Variant: ,2048Variant: ,262144Variant: ,4096
+=========================================
+Normalizing CSV headers
+=========================================
+Header set for books_100M_public_uint64_ops_2M_0.000000rq_0.500000nl_0.100000i_0m_mix_results_table.csv
+Header set for books_100M_public_uint64_ops_2M_0.000000rq_0.500000nl_0.900000i_0m_mix_results_table.csv
+Header set for fb_100M_public_uint64_ops_2M_0.000000rq_0.500000nl_0.100000i_0m_mix_results_table.csv
+Header set for fb_100M_public_uint64_ops_2M_0.000000rq_0.500000nl_0.900000i_0m_mix_results_table.csv
+Header set for osmc_100M_public_uint64_ops_2M_0.000000rq_0.500000nl_0.100000i_0m_mix_results_table.csv
+Header set for osmc_100M_public_uint64_ops_2M_0.000000rq_0.500000nl_0.900000i_0m_mix_results_table.csv
+=========================================
+Task 3 benchmarking complete.
+Generate plots with:
+  python3 scripts/milestone3_plot.py
+=========================================
+(base) [cv6106@adroit5 structured_indexing]$ 

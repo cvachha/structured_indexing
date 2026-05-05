@@ -20,11 +20,13 @@ void benchmark_64_hybrid_pgm_lipp(tli::Benchmark<uint64_t>& benchmark,
     else
       benchmark.template Run<HybridPGMLIPP<uint64_t, Searcher, 64>>();
   } else {
-    // Pareto frontier: vary error bound and flush aggressiveness together.
-    benchmark.template Run<HybridPGMLIPP<uint64_t, Searcher, 32>>({1, 256, 32768, 512});
-    benchmark.template Run<HybridPGMLIPP<uint64_t, Searcher, 64>>({2, 512, 65536, 1024});
-    benchmark.template Run<HybridPGMLIPP<uint64_t, Searcher, 128>>({3, 1024, 131072, 2048});
-    benchmark.template Run<HybridPGMLIPP<uint64_t, Searcher, 256>>({5, 2048, 262144, 4096});
+    // Pareto frontier: vary error bound and flush aggressiveness.
+    // Smaller min_flush_threshold keeps keys_in_buffers_ near 0, enabling the
+    // atomic fast-path in EqualityLookup for lookup-heavy workloads.
+    benchmark.template Run<HybridPGMLIPP<uint64_t, Searcher, 32>>({1, 128, 8192,  128});
+    benchmark.template Run<HybridPGMLIPP<uint64_t, Searcher, 64>>({1, 256, 32768, 256});
+    benchmark.template Run<HybridPGMLIPP<uint64_t, Searcher, 128>>({2, 512, 65536, 512});
+    benchmark.template Run<HybridPGMLIPP<uint64_t, Searcher, 256>>({4, 1024, 131072, 1024});
   }
 }
 

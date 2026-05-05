@@ -1,0 +1,72 @@
+(base) [cv6106@adroit5 COS568-LI-SP26]$ python3 scripts/generate_milestone_report.py
+================================================================================
+GENERATING MILESTONE REPORT
+================================================================================
+Loading results from ./results/...
+Generating bar plots...
+90% Lookup, 10% Insert:
+  Best DynamicPGM: error=32.0, search=BinarySearch, throughput=1.07 M ops/sec
+  Throughput (M ops/sec):
+    DynamicPGM          :     1.07
+    LIPP                :    13.82
+    HybridPGMLIPP       :     1.30
+  Index Size (MB):
+    DynamicPGM          :   1631.3
+    LIPP                :  12112.6
+    HybridPGMLIPP       :  12099.9
+  Hybrid vs DynamicPGM throughput: +21.01%
+  Hybrid vs LIPP throughput:       -90.59%
+10% Lookup, 90% Insert:
+  Best DynamicPGM: error=32.0, search=BinarySearch, throughput=3.19 M ops/sec
+  Throughput (M ops/sec):
+    DynamicPGM          :     3.19
+    LIPP                :     2.17
+    HybridPGMLIPP       :     3.33
+  Index Size (MB):
+    DynamicPGM          :   1631.2
+    LIPP                :  12070.3
+    HybridPGMLIPP       :  11957.4
+  Hybrid vs DynamicPGM throughput: +4.29%
+  Hybrid vs LIPP throughput:       +53.42%
+✓ Plots saved to ./plots/milestone_comparison.png
+  Best DynamicPGM: error=32.0, search=BinarySearch, throughput=1.07 M ops/sec
+✓ Saved throughput_90_lookup_10_insert.png
+✓ Saved size_90_lookup_10_insert.png
+  Best DynamicPGM: error=32.0, search=BinarySearch, throughput=3.19 M ops/sec
+✓ Saved throughput_10_lookup_90_insert.png
+✓ Saved size_10_lookup_90_insert.png
+================================================================================
+MILESTONE REPORT SUMMARY - Facebook Dataset
+================================================================================
+90% Lookup, 10% Insert
+--------------------------------------------------------------------------------
+  Best DynamicPGM: error=32.0, search=BinarySearch, throughput=1.07 M ops/sec
+Index                Throughput (M ops/s)      Size (MB)      
+--------------------------------------------------------------------------------
+DynamicPGM                 1.07                    1631.3
+LIPP                      13.82                   12112.6
+HybridPGMLIPP              1.30                   12099.9
+10% Lookup, 90% Insert
+--------------------------------------------------------------------------------
+  Best DynamicPGM: error=32.0, search=BinarySearch, throughput=3.19 M ops/sec
+Index                Throughput (M ops/s)      Size (MB)      
+--------------------------------------------------------------------------------
+DynamicPGM                 3.19                    1631.2
+LIPP                       2.17                   12070.3
+HybridPGMLIPP              3.33                   11957.4
+
+================================================================================
+
+================================================================================
+REPORT GENERATION COMPLETE
+================================================================================
+
+Plots saved in ./plots/:
+  - milestone_comparison.png (all 4 plots)
+  - throughput_90_lookup_10_insert.png
+  - size_90_lookup_10_insert.png
+  - throughput_10_lookup_90_insert.png
+  - size_10_lookup_90_insert.png
+
+Use these plots in your milestone report!
+================================================================================

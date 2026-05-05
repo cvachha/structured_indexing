@@ -2,10 +2,10 @@
 #define TLI_HYBRID_PGM_LIPP_H
 
 #include <algorithm>
+#include <atomic>
 #include <condition_variable>
 #include <cstdlib>
 #include <mutex>
-#include <shared_mutex>
 #include <thread>
 #include <vector>
 
@@ -22,9 +22,14 @@
 //   flushing_snapshot_<- sorted vector snapshot being drained into LIPP by background worker
 //   lipp_             <- main index; receives all flushed keys
 //
-// state_mu_ is a shared_mutex so concurrent lookups (shared lock) never block
-// each other; only inserts and buffer rotations need exclusive access.
-// condition_variable_any is required because state_mu_ is a shared_mutex.
+// keys_in_buffers_ is an atomic counter of keys not yet in LIPP.
+// When it is 0, EqualityLookup bypasses all buffer checks and goes straight
+// to LIPP (fast path). This eliminates state_mu_ overhead on the dominant
+// lookup path once flushing has caught up.
+//
+// Both mutexes are plain std::mutex (not shared_mutex): these benchmarks are
+// single-threaded so shared-reader concurrency is never needed, and
+// std::mutex has lower per-acquire cost than std::shared_mutex.
 
 template <class KeyType, class SearchClass, size_t pgm_error>
 class HybridPGMLIPP : public Competitor<KeyType, SearchClass> {
@@ -62,13 +67,13 @@ class HybridPGMLIPP : public Competitor<KeyType, SearchClass> {
       loading_data.emplace_back(itm.key, itm.value);
 
     {
-      std::unique_lock<std::shared_mutex> state_lock(state_mu_);
+      std::unique_lock<std::mutex> state_lock(state_mu_);
       total_keys_ = data.size();
       flush_threshold_ = ComputeFlushThreshold(total_keys_);
     }
 
     uint64_t build_time = util::timing([&] {
-      std::unique_lock<std::shared_mutex> lipp_lock(lipp_mu_);
+      std::unique_lock<std::mutex> lipp_lock(lipp_mu_);
       lipp_.bulk_load(loading_data.data(), loading_data.size());
     });
 
@@ -78,9 +83,16 @@ class HybridPGMLIPP : public Competitor<KeyType, SearchClass> {
 
   size_t EqualityLookup(const KeyType& lookup_key, uint32_t thread_id) const {
     uint64_t value = 0;
+    // Fast path: when every inserted key has been flushed to LIPP, skip all
+    // buffer checks and the state_mu_ acquire entirely.
+    if (keys_in_buffers_.load(std::memory_order_acquire) == 0) {
+      std::unique_lock<std::mutex> lipp_lock(lipp_mu_);
+      if (!lipp_.find(lookup_key, value)) return util::NOT_FOUND;
+      return value;
+    }
+    // Slow path: key might still be in one of the PGM buffers.
     if (FindInBuffers(lookup_key, value)) return value;
-
-    std::shared_lock<std::shared_mutex> lipp_lock(lipp_mu_);
+    std::unique_lock<std::mutex> lipp_lock(lipp_mu_);
     if (!lipp_.find(lookup_key, value)) return util::NOT_FOUND;
     return value;
   }
@@ -89,7 +101,7 @@ class HybridPGMLIPP : public Competitor<KeyType, SearchClass> {
                       uint32_t thread_id) const {
     uint64_t result = 0;
     {
-      std::shared_lock<std::shared_mutex> state_lock(state_mu_);
+      std::unique_lock<std::mutex> state_lock(state_mu_);
       for (auto it = active_pgm_.lower_bound(lower_key);
            it != active_pgm_.end() && it->key() <= upper_key; ++it)
         result += it->value();
@@ -108,7 +120,7 @@ class HybridPGMLIPP : public Competitor<KeyType, SearchClass> {
       }
     }
 
-    std::shared_lock<std::shared_mutex> lipp_lock(lipp_mu_);
+    std::unique_lock<std::mutex> lipp_lock(lipp_mu_);
     auto it = lipp_.lower_bound(lower_key);
     while (it != lipp_.end() && it->comp.data.key <= upper_key) {
       result += it->comp.data.value;
@@ -118,8 +130,12 @@ class HybridPGMLIPP : public Competitor<KeyType, SearchClass> {
   }
 
   void Insert(const KeyValue<KeyType>& data, uint32_t thread_id) {
+    // Increment before taking the lock: keeps the lookup fast-path conservative
+    // (it will see keys_in_buffers_ > 0 and take the slow path until the key
+    // is fully in active_pgm_).
+    keys_in_buffers_.fetch_add(1, std::memory_order_relaxed);
     {
-      std::unique_lock<std::shared_mutex> state_lock(state_mu_);
+      std::unique_lock<std::mutex> state_lock(state_mu_);
       active_pgm_.insert(data.key, data.value);
       ++active_pgm_size_;
       ++total_keys_;
@@ -135,12 +151,12 @@ class HybridPGMLIPP : public Competitor<KeyType, SearchClass> {
   std::size_t size() const {
     std::size_t total = 0;
     {
-      std::shared_lock<std::shared_mutex> state_lock(state_mu_);
+      std::unique_lock<std::mutex> state_lock(state_mu_);
       total = active_pgm_.size_in_bytes() + pending_pgm_.size_in_bytes() +
               flushing_snapshot_.capacity() * sizeof(KVPair);
     }
     {
-      std::shared_lock<std::shared_mutex> lipp_lock(lipp_mu_);
+      std::unique_lock<std::mutex> lipp_lock(lipp_mu_);
       total += lipp_.index_size();
     }
     return total;
@@ -172,7 +188,7 @@ class HybridPGMLIPP : public Competitor<KeyType, SearchClass> {
 
   // Shared-lock read: check all three buffers before falling through to LIPP.
   bool FindInBuffers(const KeyType& key, uint64_t& value) const {
-    std::shared_lock<std::shared_mutex> state_lock(state_mu_);
+    std::unique_lock<std::mutex> state_lock(state_mu_);
 
     auto it = active_pgm_.find(key);
     if (it != active_pgm_.end()) { value = it->value(); return true; }
@@ -239,7 +255,7 @@ class HybridPGMLIPP : public Competitor<KeyType, SearchClass> {
   }
 
   void StartFlushWorker() {
-    std::unique_lock<std::shared_mutex> lock(state_mu_);
+    std::unique_lock<std::mutex> lock(state_mu_);
     if (worker_started_) return;
     stop_worker_ = false;
     worker_started_ = true;
@@ -248,7 +264,7 @@ class HybridPGMLIPP : public Competitor<KeyType, SearchClass> {
 
   void StopFlushWorker() {
     {
-      std::unique_lock<std::shared_mutex> lock(state_mu_);
+      std::unique_lock<std::mutex> lock(state_mu_);
       if (!worker_started_) return;
       stop_worker_ = true;
     }
@@ -264,8 +280,7 @@ class HybridPGMLIPP : public Competitor<KeyType, SearchClass> {
       batch.reserve(flush_batch_size_);
 
       {
-        std::unique_lock<std::shared_mutex> state_lock(state_mu_);
-        // condition_variable_any works with unique_lock<shared_mutex>.
+        std::unique_lock<std::mutex> state_lock(state_mu_);
         flush_cv_.wait(state_lock, [&] {
           return stop_worker_ || !flushing_snapshot_.empty() ||
                  pending_pgm_size_ > 0;
@@ -291,13 +306,16 @@ class HybridPGMLIPP : public Competitor<KeyType, SearchClass> {
       if (batch.empty()) continue;
 
       {
-        std::unique_lock<std::shared_mutex> lipp_lock(lipp_mu_);
+        std::unique_lock<std::mutex> lipp_lock(lipp_mu_);
         for (const auto& kv : batch)
           lipp_.insert(kv.first, kv.second);
       }
+      // Keys are now in LIPP — release them from the buffer counter so the
+      // lookup fast-path can skip buffer checks once all keys are flushed.
+      keys_in_buffers_.fetch_sub(batch.size(), std::memory_order_release);
 
       if (reached_end) {
-        std::unique_lock<std::shared_mutex> state_lock(state_mu_);
+        std::unique_lock<std::mutex> state_lock(state_mu_);
         // Re-check: a concurrent insert may have created a new snapshot.
         if (flush_offset_ >= flushing_snapshot_.size()) {
           flushing_snapshot_.clear();
@@ -323,9 +341,10 @@ class HybridPGMLIPP : public Competitor<KeyType, SearchClass> {
 
   // shared_mutex: shared for reads (FindInBuffers, size, RangeQuery),
   //               exclusive for writes (Insert, buffer rotations, FlushWorker).
-  mutable std::shared_mutex state_mu_;
-  mutable std::condition_variable_any flush_cv_;
-  mutable std::shared_mutex lipp_mu_;
+  mutable std::mutex state_mu_;
+  mutable std::condition_variable flush_cv_;
+  mutable std::mutex lipp_mu_;
+  mutable std::atomic<size_t> keys_in_buffers_{0};
   mutable std::thread flush_worker_;
   mutable bool stop_worker_ = false;
   bool worker_started_ = false;
