@@ -7,8 +7,10 @@
 
 set -euo pipefail
 
-ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+# Use current directory as ROOT_DIR
+ROOT_DIR="."
 cd "${ROOT_DIR}"
+echo "ROOT_DIR: ${ROOT_DIR} ($(pwd))"
 
 echo "========================================="
 echo "Building benchmark binaries"
