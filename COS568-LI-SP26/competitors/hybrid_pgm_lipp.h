@@ -196,13 +196,17 @@ class HybridPGMLIPP : public Competitor<KeyType, SearchClass> {
 
   // Snapshot a PGM buffer into a sorted vector (PGM iterates in key order).
   // Called only under exclusive lock so dst is stable after this returns.
-  // src is non-const: DynamicPGMIndex::begin()/end() are non-const methods.
-  // All PGM members are mutable so this is fine from a const-method context.
+  //
+  // We use lower_bound(min_key) instead of begin() because begin() uses a
+  // 3-arg iterator constructor that requires a non-const DynamicPGMIndex*,
+  // while lower_bound uses a 4-arg form that is const-correct.  Both produce
+  // the same traversal order.
   void SnapshotPGM(PGMType& src, std::vector<KVPair>& dst,
                    size_t hint) const {
     dst.clear();
     dst.reserve(hint);
-    for (auto it = src.begin(); it != src.end(); ++it)
+    const KeyType min_key = std::numeric_limits<KeyType>::min();
+    for (auto it = src.lower_bound(min_key); it != src.end(); ++it)
       dst.emplace_back(it->key(), it->value());
     // dst is already sorted because DynamicPGM iterates in ascending key order.
   }
