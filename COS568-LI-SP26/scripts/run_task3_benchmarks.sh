@@ -8,18 +8,39 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+RESULTS_DIR="${ROOT_DIR}/results"
+
+# Prefer in-repo build directory, but fall back to writable temp dirs on clusters.
+PREFERRED_BUILD_DIR="${ROOT_DIR}/build"
+if mkdir -p "${PREFERRED_BUILD_DIR}" 2>/dev/null; then
+  BUILD_DIR="${PREFERRED_BUILD_DIR}"
+elif [ -n "${SLURM_TMPDIR:-}" ]; then
+  BUILD_DIR="${SLURM_TMPDIR}/cos568_build"
+  mkdir -p "${BUILD_DIR}"
+  echo "Warning: cannot write to ${PREFERRED_BUILD_DIR}; using ${BUILD_DIR}"
+elif [ -n "${TMPDIR:-}" ]; then
+  BUILD_DIR="${TMPDIR}/cos568_build"
+  mkdir -p "${BUILD_DIR}"
+  echo "Warning: cannot write to ${PREFERRED_BUILD_DIR}; using ${BUILD_DIR}"
+else
+  echo "Error: cannot create ${PREFERRED_BUILD_DIR}, and no SLURM_TMPDIR/TMPDIR fallback is available"
+  exit 1
+fi
+
+echo "ROOT_DIR=${ROOT_DIR}"
+echo "BUILD_DIR=${BUILD_DIR}"
+
 cd "${ROOT_DIR}"
 
 echo "========================================="
 echo "Building benchmark binaries"
 echo "========================================="
 
-mkdir -p build
-cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-O3 -march=native"
-cmake --build build -j "$(nproc 2>/dev/null || echo 4)"
+cmake -S "${ROOT_DIR}" -B "${BUILD_DIR}" -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-O3 -march=native"
+cmake --build "${BUILD_DIR}" -j "$(nproc 2>/dev/null || echo 4)"
 
-BENCHMARK="${ROOT_DIR}/build/benchmark"
-GENERATOR="${ROOT_DIR}/build/generate"
+BENCHMARK="${BUILD_DIR}/benchmark"
+GENERATOR="${BUILD_DIR}/generate"
 
 if [ ! -f "${BENCHMARK}" ]; then
   echo "Error: benchmark binary not found at ${BENCHMARK}"
@@ -30,7 +51,7 @@ if [ ! -f "${GENERATOR}" ]; then
   exit 1
 fi
 
-mkdir -p "${ROOT_DIR}/results"
+mkdir -p "${RESULTS_DIR}"
 
 DATASETS=(
   "fb_100M_public_uint64"
@@ -43,13 +64,13 @@ run_one() {
   local ops="$2"
 
   echo "  -> LIPP"
-  "${BENCHMARK}" "./data/${data}" "./data/${ops}" --through --csv --only LIPP -r 3
+  "${BENCHMARK}" "${ROOT_DIR}/data/${data}" "${ROOT_DIR}/data/${ops}" --through --csv --only LIPP -r 3
 
   echo "  -> DynamicPGM (pareto)"
-  "${BENCHMARK}" "./data/${data}" "./data/${ops}" --through --csv --only DynamicPGM --pareto -r 3
+  "${BENCHMARK}" "${ROOT_DIR}/data/${data}" "${ROOT_DIR}/data/${ops}" --through --csv --only DynamicPGM --pareto -r 3
 
   echo "  -> HybridPGMLIPP (pareto)"
-  "${BENCHMARK}" "./data/${data}" "./data/${ops}" --through --csv --only HybridPGMLIPP --pareto -r 3
+  "${BENCHMARK}" "${ROOT_DIR}/data/${data}" "${ROOT_DIR}/data/${ops}" --through --csv --only HybridPGMLIPP --pareto -r 3
 }
 
 for DATA in "${DATASETS[@]}"; do
@@ -64,11 +85,10 @@ for DATA in "${DATASETS[@]}"; do
   echo "Generating mixed workloads for ${DATA}"
   echo "========================================="
 
-  # Paths passed to the generator are relative to ROOT_DIR (current directory).
-  "${GENERATOR}" "./data/${DATA}" 2000000 \
+  "${GENERATOR}" "${ROOT_DIR}/data/${DATA}" 2000000 \
     --insert-ratio 0.1 --negative-lookup-ratio 0.5 --mix
 
-  "${GENERATOR}" "./data/${DATA}" 2000000 \
+  "${GENERATOR}" "${ROOT_DIR}/data/${DATA}" 2000000 \
     --insert-ratio 0.9 --negative-lookup-ratio 0.5 --mix
 
   OPS_10I="${DATA}_ops_2M_0.000000rq_0.500000nl_0.100000i_0m_mix"
