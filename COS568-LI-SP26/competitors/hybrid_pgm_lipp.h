@@ -196,7 +196,9 @@ class HybridPGMLIPP : public Competitor<KeyType, SearchClass> {
 
   // Snapshot a PGM buffer into a sorted vector (PGM iterates in key order).
   // Called only under exclusive lock so dst is stable after this returns.
-  void SnapshotPGM(const PGMType& src, std::vector<KVPair>& dst,
+  // src is non-const: DynamicPGMIndex::begin()/end() are non-const methods.
+  // All PGM members are mutable so this is fine from a const-method context.
+  void SnapshotPGM(PGMType& src, std::vector<KVPair>& dst,
                    size_t hint) const {
     dst.clear();
     dst.reserve(hint);
