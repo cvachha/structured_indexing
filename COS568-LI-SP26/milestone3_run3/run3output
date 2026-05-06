@@ -1,0 +1,49 @@
+(base) [cv6106@adroit5 COS568-LI-SP26]$ python scripts/milestone3_plot.py
+Loading results from: /scratch/network/cv6106/cos568/structured_indexing/COS568-LI-SP26/results
+
+Books | 10% Lookup / 90% Insert
+  DynamicPGM        tp=  3.39 M ops/s  size=1621.3 MiB
+  LIPP              tp=  3.03 M ops/s  size=11209.1 MiB
+  HybridPGMLIPP     tp=  1.52 M ops/s  size=11205.7 MiB
+  Saved tp_books_10pct_Lookup___90pct_Insert.png
+  Saved size_books_10pct_Lookup___90pct_Insert.png
+
+Books | 90% Lookup / 10% Insert
+  DynamicPGM        tp=  1.15 M ops/s  size=1621.3 MiB
+  LIPP              tp= 22.89 M ops/s  size=11271.0 MiB
+  HybridPGMLIPP     tp=  1.55 M ops/s  size=11270.9 MiB
+  Saved tp_books_90pct_Lookup___10pct_Insert.png
+  Saved size_books_90pct_Lookup___10pct_Insert.png
+
+Facebook | 10% Lookup / 90% Insert
+  DynamicPGM        tp=  3.19 M ops/s  size=1631.2 MiB
+  LIPP              tp=  2.37 M ops/s  size=12070.3 MiB
+  HybridPGMLIPP     tp=  3.33 M ops/s  size=11957.4 MiB
+  Saved tp_fb_10pct_Lookup___90pct_Insert.png
+  Saved size_fb_10pct_Lookup___90pct_Insert.png
+
+Facebook | 90% Lookup / 10% Insert
+  DynamicPGM        tp=  1.07 M ops/s  size=1631.3 MiB
+  LIPP              tp= 18.00 M ops/s  size=12112.6 MiB
+  HybridPGMLIPP     tp=  1.45 M ops/s  size=12112.4 MiB
+  Saved tp_fb_90pct_Lookup___10pct_Insert.png
+  Saved size_fb_90pct_Lookup___10pct_Insert.png
+
+OSMC | 10% Lookup / 90% Insert
+  DynamicPGM        tp=  3.08 M ops/s  size=1628.6 MiB
+  LIPP              tp=  1.95 M ops/s  size=19463.5 MiB
+  HybridPGMLIPP     tp=  1.31 M ops/s  size=19457.3 MiB
+  Saved tp_osmc_10pct_Lookup___90pct_Insert.png
+  Saved size_osmc_10pct_Lookup___90pct_Insert.png
+
+OSMC | 90% Lookup / 10% Insert
+  DynamicPGM        tp=  1.17 M ops/s  size=1628.6 MiB
+  LIPP              tp= 14.79 M ops/s  size=19648.4 MiB
+  HybridPGMLIPP     tp=  1.44 M ops/s  size=19648.2 MiB
+  Saved tp_osmc_90pct_Lookup___10pct_Insert.png
+  Saved size_osmc_90pct_Lookup___10pct_Insert.png
+
+Summary written to ./plots/milestone3/milestone3_summary.csv
+
+Produced 12 plots in /scratch/network/cv6106/cos568/structured_indexing/COS568-LI-SP26/plots/milestone3 [OK]
+(base) [cv6106@adroit5 COS568-LI-SP26]$
